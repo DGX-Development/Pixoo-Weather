@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Open-Meteo Icon Slideshow</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+    main {
+      width: min(92vmin, 760px);
+    }
+    img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background: #000;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 12px;
+      color: #bbb;
+      font-size: 16px;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    button {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #444;
+      background: #1f2933;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .sheet {
+      margin-top: 32px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <img id="slide" src="" alt="Weather code icon slide">
+    <div class="meta">
+      <span id="title"></span>
+      <span id="count"></span>
+    </div>
+    <div class="meta">
+      <span id="icon"></span>
+    </div>
+    <div class="controls">
+      <button id="prev" type="button">Previous</button>
+      <button id="next" type="button">Next</button>
+    </div>
+    <img class="sheet" src="weather-icon-key-sheet-large.png" alt="All supported weather icon keys">
+  </main>
+  <script>
+    const slides = [
+      {src: 'weather-code-slides/code-0-512.png', code: '0', condition: 'clear sky', icon: 'clear_sun'},
+      {src: 'weather-code-slides/code-1-512.png', code: '1', condition: 'mainly clear', icon: 'mostly_sunny'},
+      {src: 'weather-code-slides/code-2-512.png', code: '2', condition: 'partly cloudy', icon: 'partly_cloudy'},
+      {src: 'weather-code-slides/code-3-512.png', code: '3', condition: 'overcast', icon: 'overcast'},
+      {src: 'weather-code-slides/code-45-512.png', code: '45', condition: 'fog', icon: 'fog'},
+      {src: 'weather-code-slides/code-48-512.png', code: '48', condition: 'depositing rime fog', icon: 'rime_fog'},
+      {src: 'weather-code-slides/code-51-512.png', code: '51', condition: 'light drizzle', icon: 'drizzle'},
+      {src: 'weather-code-slides/code-53-512.png', code: '53', condition: 'moderate drizzle', icon: 'drizzle'},
+      {src: 'weather-code-slides/code-55-512.png', code: '55', condition: 'dense drizzle', icon: 'drizzle'},
+      {src: 'weather-code-slides/code-56-512.png', code: '56', condition: 'light freezing drizzle', icon: 'freezing_drizzle'},
+      {src: 'weather-code-slides/code-57-512.png', code: '57', condition: 'dense freezing drizzle', icon: 'freezing_drizzle'},
+      {src: 'weather-code-slides/code-61-512.png', code: '61', condition: 'slight rain', icon: 'rain'},
+      {src: 'weather-code-slides/code-63-512.png', code: '63', condition: 'moderate rain', icon: 'rain'},
+      {src: 'weather-code-slides/code-65-512.png', code: '65', condition: 'heavy rain', icon: 'heavy_rain'},
+      {src: 'weather-code-slides/code-66-512.png', code: '66', condition: 'light freezing rain', icon: 'freezing_rain'},
+      {src: 'weather-code-slides/code-67-512.png', code: '67', condition: 'heavy freezing rain', icon: 'freezing_rain'},
+      {src: 'weather-code-slides/code-71-512.png', code: '71', condition: 'slight snow', icon: 'snow'},
+      {src: 'weather-code-slides/code-73-512.png', code: '73', condition: 'moderate snow', icon: 'snow'},
+      {src: 'weather-code-slides/code-75-512.png', code: '75', condition: 'heavy snow', icon: 'heavy_snow'},
+      {src: 'weather-code-slides/code-77-512.png', code: '77', condition: 'snow grains', icon: 'snow'},
+      {src: 'weather-code-slides/code-80-512.png', code: '80', condition: 'slight rain showers', icon: 'rain_showers'},
+      {src: 'weather-code-slides/code-81-512.png', code: '81', condition: 'moderate rain showers', icon: 'rain_showers'},
+      {src: 'weather-code-slides/code-82-512.png', code: '82', condition: 'violent rain showers', icon: 'violent_showers'},
+      {src: 'weather-code-slides/code-85-512.png', code: '85', condition: 'slight snow showers', icon: 'snow_showers'},
+      {src: 'weather-code-slides/code-86-512.png', code: '86', condition: 'heavy snow showers', icon: 'heavy_snow_showers'},
+      {src: 'weather-code-slides/code-95-512.png', code: '95', condition: 'thunderstorm', icon: 'thunderstorm'},
+      {src: 'weather-code-slides/code-96-512.png', code: '96', condition: 'thunderstorm with slight hail', icon: 'hailstorm'},
+      {src: 'weather-code-slides/code-99-512.png', code: '99', condition: 'thunderstorm with heavy hail', icon: 'hailstorm'},
+      {src: 'weather-code-slides/code-68-512.png', code: '68', condition: 'unexpected code example', icon: 'weather_unknown'},
+      {src: 'weather-code-slides/code-0-night-512.png', code: '0 night', condition: 'clear sky at night', icon: 'clear_moon'},
+      {src: 'weather-code-slides/code-1-night-512.png', code: '1 night', condition: 'mainly clear at night', icon: 'mostly_clear_night'},
+      {src: 'weather-code-slides/code-2-night-512.png', code: '2 night', condition: 'partly cloudy at night', icon: 'partly_cloudy_night'}
+    ];
+    let index = 0;
+    const image = document.getElementById('slide');
+    const title = document.getElementById('title');
+    const count = document.getElementById('count');
+    const icon = document.getElementById('icon');
+
+    function showSlide() {
+      const slide = slides[index];
+      image.src = slide.src;
+      title.textContent = `Code ${slide.code}: ${slide.condition}`;
+      icon.textContent = slide.icon;
+      count.textContent = `${index + 1} / ${slides.length}`;
+    }
+
+    document.getElementById('prev').addEventListener('click', () => {
+      index = (index - 1 + slides.length) % slides.length;
+      showSlide();
+    });
+    document.getElementById('next').addEventListener('click', () => {
+      index = (index + 1) % slides.length;
+      showSlide();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') document.getElementById('prev').click();
+      if (event.key === 'ArrowRight') document.getElementById('next').click();
+    });
+    showSlide();
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+[Unit]
+Description=Pixoo Weather dashboard
+Wants=network-online.target
+After=network-online.target pixoo-rest.service
+Requires=pixoo-rest.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/pixoo-weather
+ExecStart=/home/pi/pixoo-weather/.venv/bin/python app.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
